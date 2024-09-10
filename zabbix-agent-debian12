@@ -36,7 +36,7 @@ RefreshActiveChecks=60
 Include=/etc/zabbix/zabbix_agentd.conf.d/*.conf" > /etc/zabbix/zabbix_agentd.conf
 
 # Reiniciar o serviço do Zabbix Agent
-systemctl enable zabbix-agent
+# systemctl enable zabbix-agent
 systemctl stop zabbix-agent
 systemctl start zabbix-agent
 systemctl status zabbix-agent
