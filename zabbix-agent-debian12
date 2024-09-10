@@ -1,0 +1,42 @@
+#Remove o arquivo se existir
+rm /etc/zabbix/zabbix_agentd.conf
+
+#Baixar e instalar o agente do zabbix
+wget https://repo.zabbix.com/zabbix/7.0/debian/pool/main/z/zabbix-release/zabbix-release_7.0-2+debian12_all.deb
+dpkg -i zabbix-release_7.0-2+debian12_all.deb
+apt update
+apt install zabbix-agent -y
+mkdir -p /run/Zabbix
+chown zabbix:zabbix /run/zabbix
+chmod 755 /run/zabbix
+mkdir -p /var/log/zabbix-agent
+chown zabbix:zabbix /var/log/zabbix-agent
+chmod 755 /var/log/zabbix-agent
+mkdir -p /etc/zabbix/zabbix_agentd.conf.d
+chown -R zabbix:zabbix /etc/zabbix
+chmod -R 755 /etc/zabbix
+
+# Coletar o IP principal do host
+ip=$(hostname -I | awk '{print $1}')
+
+# Coletar o gateway padrão
+gateway=$(ip route | grep default | awk '{print $3}')
+
+# Gerar o arquivo de configuração do Zabbix Agent
+echo "PidFile=/var/run/zabbix/zabbix_agentd.pid
+LogFile=/var/log/zabbix-agent/zabbix_agentd.log
+LogFileSize=0
+Server=$gateway
+ListenPort=10050
+ListenIP=$ip
+ServerActive=$gateway
+HostnameItem=system.hostname
+HostMetadata=LinuxServer
+RefreshActiveChecks=60
+Include=/etc/zabbix/zabbix_agentd.conf.d/*.conf" > /etc/zabbix/zabbix_agentd.conf
+
+# Reiniciar o serviço do Zabbix Agent
+systemctl enable zabbix-agent
+systemctl stop zabbix-agent
+systemctl start zabbix-agent
+systemctl status zabbix-agent
